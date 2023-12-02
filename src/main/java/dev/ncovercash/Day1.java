@@ -31,10 +31,7 @@ public class Day1 implements Solution {
     return (
       lines
         .stream()
-        .mapToInt(line -> {
-          log.info("{} -> {}, {}", line, getFirstNum(line), getLastNum(line));
-          return getFirstNum(line) * 10 + getLastNum(line);
-        })
+        .mapToInt(line -> getFirstNum(line) * 10 + getLastNum(line))
         .sum() +
       ""
     );
@@ -80,8 +77,6 @@ public class Day1 implements Solution {
       }
     }
 
-    log.info("Found first {} at [{}]", bestNum, bestIndex);
-
     return bestNum;
   }
 
@@ -100,7 +95,6 @@ public class Day1 implements Solution {
       }
     }
 
-    log.info("Found last {} at [{}]", bestNum, bestIndex);
     return bestNum;
   }
 }
