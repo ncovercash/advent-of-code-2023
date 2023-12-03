@@ -25,13 +25,13 @@ class Day3Test {
 
     if (!"skip".equals(expectedPart1)) {
       String actual = instance.completeChallengePartOne(filename);
-      log.info("Day 1 Part 1: {}", actual);
+      log.info("Part 1: {}", actual);
       assertEquals(expectedPart1, actual);
     }
 
     if (!"skip".equals(expectedPart2)) {
       String actual = instance.completeChallengePartTwo(filename);
-      log.info("Day 1 Part 2: {}", actual);
+      log.info("Part 2: {}", actual);
       assertEquals(expectedPart2, actual);
     }
   }
