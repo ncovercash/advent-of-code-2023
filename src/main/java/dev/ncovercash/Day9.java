@@ -2,14 +2,9 @@ package dev.ncovercash;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
-import lombok.Data;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.math3.util.ArithmeticUtils;
 
 @Log4j2
 public class Day9 implements Solution {
