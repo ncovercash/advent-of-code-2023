@@ -1,9 +1,7 @@
 package dev.ncovercash;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.tuple.Pair;
@@ -128,7 +126,6 @@ public class Day10 implements Solution {
       for (int j = 0; j < pipes.get(i).size(); j++) {
         if (!path.contains(Pair.of(i, j))) {
           int numCrossed = 0;
-          boolean crossedUpOnly = false;
           boolean crossedUpFromLeft = true;
           // travel to top
           for (int k = i - 1; k >= 0; k--) {
@@ -144,10 +141,8 @@ public class Day10 implements Solution {
               ) {
                 // do nothing
               } else if (pipes.get(k).get(j).isUp()) {
-                crossedUpOnly = true;
                 crossedUpFromLeft = pipes.get(k).get(j).isLeft();
               } else if (pipes.get(k).get(j).isDown()) {
-                crossedUpOnly = false;
                 if (crossedUpFromLeft && pipes.get(k).get(j).isRight()) {
                   numCrossed++;
                 } else if (!crossedUpFromLeft && pipes.get(k).get(j).isLeft()) {
