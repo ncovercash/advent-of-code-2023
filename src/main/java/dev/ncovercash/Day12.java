@@ -29,7 +29,11 @@ public class Day12 implements Solution {
         .filter(str -> !str.isBlank())
         .toList();
 
-      int n = getNumOptions(chunks, needed);
+      int n = getNumOptions(
+        chunks,
+        needed,
+        needed.stream().mapToInt(i -> i).sum()
+      );
       log.info("{} with {} => {}", game, needed, n);
       sum += n;
     }
@@ -76,7 +80,11 @@ public class Day12 implements Solution {
         .filter(str -> !str.isBlank())
         .toList();
 
-      int n = getNumOptions(chunks, needed);
+      int n = getNumOptions(
+        chunks,
+        needed,
+        needed.stream().mapToInt(i -> i).sum()
+      );
       log.info("{} with {} => {}", game, needed, n);
       sum += n;
     }
@@ -84,8 +92,16 @@ public class Day12 implements Solution {
     return "" + sum;
   }
 
-  private int getNumOptions(List<String> chunks, List<Integer> needed) {
+  private int getNumOptions(
+    List<String> chunks,
+    List<Integer> needed,
+    int minLength
+  ) {
+    if (chunks.stream().mapToInt(String::length).sum() < minLength) {
+      return 0;
+    }
     // have too many required chunks
+    // may be premature?
     if (
       needed.size() < chunks.stream().filter(str -> str.contains("#")).count()
     ) {
@@ -109,7 +125,7 @@ public class Day12 implements Solution {
         // we can't skip this.
         return 0;
       }
-      return getNumOptions(chunks.subList(1, chunks.size()), needed);
+      return getNumOptions(chunks.subList(1, chunks.size()), needed, minLength);
     }
 
     // first chunk can go full ###
@@ -118,13 +134,14 @@ public class Day12 implements Solution {
       int possibleSkipping = 0;
       if (!chunk.contains("#")) {
         possibleSkipping =
-          getNumOptions(chunks.subList(1, chunks.size()), needed);
+          getNumOptions(chunks.subList(1, chunks.size()), needed, minLength);
       }
 
       return (
         getNumOptions(
           chunks.subList(1, chunks.size()),
-          needed.subList(1, needed.size())
+          needed.subList(1, needed.size()),
+          minLength - neededSize
         ) +
         possibleSkipping
       );
@@ -157,7 +174,7 @@ public class Day12 implements Solution {
 
     // we don't fit
     if (chunk.charAt(neededSize) == '#') {
-      return getNumOptions(skipThisChunk, needed);
+      return getNumOptions(skipThisChunk, needed, minLength);
     }
 
     List<String> newChunks = new ArrayList<>(chunks);
@@ -166,8 +183,12 @@ public class Day12 implements Solution {
     newChunks.set(0, chunk.substring(neededSize + 1));
     // log.info("WE CAN FIT {} in {}", neededSize, chunk);
     return (
-      getNumOptions(newChunks, needed.subList(1, needed.size())) +
-      getNumOptions(skipThisChunk, needed)
+      getNumOptions(
+        newChunks,
+        needed.subList(1, needed.size()),
+        minLength - neededSize
+      ) +
+      getNumOptions(skipThisChunk, needed, minLength)
     );
   }
 }
