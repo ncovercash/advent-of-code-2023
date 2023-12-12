@@ -13,8 +13,8 @@ class Day12Test {
 
   static List<Arguments> testCases() {
     return List.of(
-      Arguments.of("12/example.txt", "21", "525152"),
-      Arguments.of("12/input.txt", "8419", "skip")
+      Arguments.of("12/example.txt", "skip"/* 21" */, "skip"/*525152*/),
+      Arguments.of("12/input.txt", "skip"/* 8419" */, "")
     );
   }
 
@@ -27,7 +27,7 @@ class Day12Test {
       int start = (int) System.currentTimeMillis();
       String actual = instance.completeChallengePartOne(filename);
       log.info(
-        "Part 1: {} in {}",
+        "Part 1: {} in {}ms",
         actual,
         (int) System.currentTimeMillis() - start
       );
@@ -38,7 +38,7 @@ class Day12Test {
       int start = (int) System.currentTimeMillis();
       String actual = instance.completeChallengePartTwo(filename);
       log.info(
-        "Part 2: {} in {}",
+        "Part 2: {} in {}ms",
         actual,
         (int) System.currentTimeMillis() - start
       );

@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -15,7 +16,7 @@ public class Day12 implements Solution {
   public String completeChallengePartOne(String filename) {
     List<String> lines = InputUtils.getLines(filename);
 
-    int sum = 0;
+    long sum = 0;
 
     for (String line : lines) {
       String game = line.split(" ")[0];
@@ -29,10 +30,10 @@ public class Day12 implements Solution {
         .filter(str -> !str.isBlank())
         .toList();
 
-      int n = getNumOptions(
-        chunks,
+      long n = getNumOptions(
+        chunks.stream().collect(Collectors.joining(".")),
         needed,
-        needed.stream().mapToInt(i -> i).sum()
+        needed.stream().mapToInt(i -> i).sum() + needed.size() - 1
       );
       log.info("{} with {} => {}", game, needed, n);
       sum += n;
@@ -45,7 +46,7 @@ public class Day12 implements Solution {
   public String completeChallengePartTwo(String filename) {
     List<String> lines = InputUtils.getLines(filename);
 
-    int sum = 0;
+    long sum = 0;
 
     for (String line : lines) {
       String game =
@@ -80,10 +81,10 @@ public class Day12 implements Solution {
         .filter(str -> !str.isBlank())
         .toList();
 
-      int n = getNumOptions(
-        chunks,
+      long n = getNumOptions(
+        chunks.stream().collect(Collectors.joining(".")),
         needed,
-        needed.stream().mapToInt(i -> i).sum()
+        needed.stream().mapToInt(i -> i).sum() + needed.size() - 1
       );
       log.info("{} with {} => {}", game, needed, n);
       sum += n;
@@ -92,32 +93,39 @@ public class Day12 implements Solution {
     return "" + sum;
   }
 
-  private int getNumOptions(
-    List<String> chunks,
-    List<Integer> needed,
-    int minLength
-  ) {
-    if (chunks.stream().mapToInt(String::length).sum() < minLength) {
+  private long getNumOptions(String game, List<Integer> needed, int minLength) {
+    if (game.length() < minLength) {
       return 0;
     }
-    // have too many required chunks
-    // may be premature?
-    if (
-      needed.size() < chunks.stream().filter(str -> str.contains("#")).count()
-    ) {
-      return 0;
-    }
+    // // have too many required chunks
+    // // may be premature?
+    // if (
+    //   needed.size() < chunks.stream().filter(str -> str.contains("#")).count()
+    // ) {
+    //   return 0;
+    // }
     // all done!
     if (needed.isEmpty()) {
-      return 1;
+      // we can't have leftover #
+      return game.contains("#") ? 0 : 1;
     }
     // some still needed, but no chunks left
-    if (chunks.isEmpty()) {
+    if (game.isEmpty()) {
       return 0;
     }
 
+    if (game.startsWith(".")) {
+      return getNumOptions(game.substring(1), needed, minLength);
+    }
+
     int neededSize = needed.get(0);
-    String chunk = chunks.get(0);
+    int indexOfChunkEnd = game.indexOf(".");
+    int indexOfNextChunkStart = indexOfChunkEnd + 1;
+    if (indexOfChunkEnd == -1) {
+      indexOfChunkEnd = game.length();
+      indexOfNextChunkStart = game.length();
+    }
+    String chunk = game.substring(0, indexOfChunkEnd);
 
     // first chunk cannot satisfy
     if (chunk.length() < neededSize) {
@@ -125,23 +133,31 @@ public class Day12 implements Solution {
         // we can't skip this.
         return 0;
       }
-      return getNumOptions(chunks.subList(1, chunks.size()), needed, minLength);
+      return getNumOptions(
+        game.substring(indexOfNextChunkStart),
+        needed,
+        minLength
+      );
     }
 
     // first chunk can go full ###
     if (chunk.length() == neededSize) {
       // return doing and not doing this
-      int possibleSkipping = 0;
+      long possibleSkipping = 0;
       if (!chunk.contains("#")) {
         possibleSkipping =
-          getNumOptions(chunks.subList(1, chunks.size()), needed, minLength);
+          getNumOptions(
+            game.substring(indexOfNextChunkStart),
+            needed,
+            minLength
+          );
       }
 
       return (
         getNumOptions(
-          chunks.subList(1, chunks.size()),
+          game.substring(indexOfNextChunkStart),
           needed.subList(1, needed.size()),
-          minLength - neededSize
+          Math.max(minLength - neededSize - 1, 0)
         ) +
         possibleSkipping
       );
@@ -162,14 +178,13 @@ public class Day12 implements Solution {
       return 0;
     }
 
-    List<String> skipThisChunk;
+    String skipThisChunk;
     if (numHashAtStart > 0) {
       // we can't skip #, so we fail it
-      skipThisChunk = new ArrayList<>();
+      skipThisChunk = "";
     } else {
       // remove a ?, try again
-      skipThisChunk = new ArrayList<>(chunks);
-      skipThisChunk.set(0, chunk.substring(1));
+      skipThisChunk = game.substring(1);
     }
 
     // we don't fit
@@ -177,16 +192,13 @@ public class Day12 implements Solution {
       return getNumOptions(skipThisChunk, needed, minLength);
     }
 
-    List<String> newChunks = new ArrayList<>(chunks);
-    // we fit!
-    // take an extra slot for the gap between chunks
-    newChunks.set(0, chunk.substring(neededSize + 1));
+    String newGame = game.substring(neededSize + 1);
     // log.info("WE CAN FIT {} in {}", neededSize, chunk);
     return (
       getNumOptions(
-        newChunks,
+        newGame,
         needed.subList(1, needed.size()),
-        minLength - neededSize
+        Math.max(minLength - neededSize - 1, 0)
       ) +
       getNumOptions(skipThisChunk, needed, minLength)
     );
