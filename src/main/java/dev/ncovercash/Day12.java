@@ -32,6 +32,7 @@ public class Day12 implements Solution {
 
       long n = getNumOptions(
         chunks.stream().collect(Collectors.joining(".")),
+        0,
         needed,
         needed.stream().mapToInt(i -> i).sum() + needed.size() - 1
       );
@@ -83,6 +84,7 @@ public class Day12 implements Solution {
 
       long n = getNumOptions(
         chunks.stream().collect(Collectors.joining(".")),
+        0,
         needed,
         needed.stream().mapToInt(i -> i).sum() + needed.size() - 1
       );
@@ -93,8 +95,13 @@ public class Day12 implements Solution {
     return "" + sum;
   }
 
-  private long getNumOptions(String game, List<Integer> needed, int minLength) {
-    if (game.length() < minLength) {
+  private long getNumOptions(
+    final String game,
+    final int st,
+    final List<Integer> needed,
+    final int minLength
+  ) {
+    if (game.length() - st < minLength) {
       return 0;
     }
     // // have too many required chunks
@@ -107,25 +114,25 @@ public class Day12 implements Solution {
     // all done!
     if (needed.isEmpty()) {
       // we can't have leftover #
-      return game.contains("#") ? 0 : 1;
+      return game.indexOf("#", st) >= 0 ? 0 : 1;
     }
     // some still needed, but no chunks left
-    if (game.isEmpty()) {
+    if (st >= game.length()) {
       return 0;
     }
 
-    if (game.startsWith(".")) {
-      return getNumOptions(game.substring(1), needed, minLength);
+    if (game.charAt(st) == '.') {
+      return getNumOptions(game, st + 1, needed, minLength);
     }
 
     int neededSize = needed.get(0);
-    int indexOfChunkEnd = game.indexOf(".");
+    int indexOfChunkEnd = game.indexOf(".", st);
     int indexOfNextChunkStart = indexOfChunkEnd + 1;
     if (indexOfChunkEnd == -1) {
       indexOfChunkEnd = game.length();
       indexOfNextChunkStart = game.length();
     }
-    String chunk = game.substring(0, indexOfChunkEnd);
+    String chunk = game.substring(st, indexOfChunkEnd);
 
     // first chunk cannot satisfy
     if (chunk.length() < neededSize) {
@@ -133,11 +140,7 @@ public class Day12 implements Solution {
         // we can't skip this.
         return 0;
       }
-      return getNumOptions(
-        game.substring(indexOfNextChunkStart),
-        needed,
-        minLength
-      );
+      return getNumOptions(game, indexOfNextChunkStart, needed, minLength);
     }
 
     // first chunk can go full ###
@@ -146,16 +149,13 @@ public class Day12 implements Solution {
       long possibleSkipping = 0;
       if (!chunk.contains("#")) {
         possibleSkipping =
-          getNumOptions(
-            game.substring(indexOfNextChunkStart),
-            needed,
-            minLength
-          );
+          getNumOptions(game, indexOfNextChunkStart, needed, minLength);
       }
 
       return (
         getNumOptions(
-          game.substring(indexOfNextChunkStart),
+          game,
+          indexOfNextChunkStart,
           needed.subList(1, needed.size()),
           Math.max(minLength - neededSize - 1, 0)
         ) +
@@ -178,29 +178,29 @@ public class Day12 implements Solution {
       return 0;
     }
 
-    String skipThisChunk;
+    int skipThisChunk;
     if (numHashAtStart > 0) {
       // we can't skip #, so we fail it
-      skipThisChunk = "";
+      skipThisChunk = Integer.MAX_VALUE;
     } else {
       // remove a ?, try again
-      skipThisChunk = game.substring(1);
+      skipThisChunk = st + 1;
     }
 
     // we don't fit
     if (chunk.charAt(neededSize) == '#') {
-      return getNumOptions(skipThisChunk, needed, minLength);
+      return getNumOptions(game, skipThisChunk, needed, minLength);
     }
 
-    String newGame = game.substring(neededSize + 1);
     // log.info("WE CAN FIT {} in {}", neededSize, chunk);
     return (
       getNumOptions(
-        newGame,
+        game,
+        st + neededSize + 1,
         needed.subList(1, needed.size()),
         Math.max(minLength - neededSize - 1, 0)
       ) +
-      getNumOptions(skipThisChunk, needed, minLength)
+      getNumOptions(game, skipThisChunk, needed, minLength)
     );
   }
 }
