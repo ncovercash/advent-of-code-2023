@@ -5,6 +5,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.tuple.Pair;
@@ -47,7 +51,9 @@ public class Day12 implements Solution {
   public String completeChallengePartTwo(String filename) {
     List<String> lines = InputUtils.getLines(filename);
 
-    long sum = 0;
+    AtomicLong sum = new AtomicLong(0);
+
+    ExecutorService executor = Executors.newFixedThreadPool(10);
 
     for (String line : lines) {
       String game =
@@ -82,14 +88,23 @@ public class Day12 implements Solution {
         .filter(str -> !str.isBlank())
         .toList();
 
-      long n = getNumOptions(
-        chunks.stream().collect(Collectors.joining(".")),
-        0,
-        needed,
-        needed.stream().mapToInt(i -> i).sum() + needed.size() - 1
-      );
-      log.info("{} with {} => {}", game, needed, n);
-      sum += n;
+      executor.submit(() -> {
+        long n = getNumOptions(
+          chunks.stream().collect(Collectors.joining(".")),
+          0,
+          needed,
+          needed.stream().mapToInt(i -> i).sum() + needed.size() - 1
+        );
+        log.info("{} with {} => {}", game, needed, n);
+        sum.addAndGet(n);
+      });
+    }
+
+    try {
+      executor.shutdown();
+      executor.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
     }
 
     return "" + sum;
