@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -31,6 +32,22 @@ public class InputUtils {
     }
 
     return lines.subList(0, lastNonEmpty);
+  }
+
+  public static List<List<Character>> getCharacterArray(String filename) {
+    List<String> lines = getLines(filename);
+
+    List<List<Character>> result = new ArrayList<>();
+    for (String line : lines) {
+      result.add(
+        line
+          .chars()
+          .mapToObj(c -> (char) c)
+          .collect(Collectors.toCollection(ArrayList::new))
+      );
+    }
+
+    return result;
   }
 
   public static List<List<String>> getLinesByClump(String filename) {
