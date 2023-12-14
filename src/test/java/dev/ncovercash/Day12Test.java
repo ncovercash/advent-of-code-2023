@@ -13,8 +13,8 @@ class Day12Test {
 
   static List<Arguments> testCases() {
     return List.of(
-      Arguments.of("12/example.txt", "21"/* 21" */, "525152"/*525152*/),
-      Arguments.of("12/input.txt", "8419"/* 8419" */, "skip")
+      Arguments.of("12/example.txt", "21", "525152"),
+      Arguments.of("12/input.txt", "8419", "160500973317706")
     );
   }
 

@@ -1,7 +1,9 @@
 package dev.ncovercash;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +36,8 @@ public class Day12 implements Solution {
         chunks.stream().collect(Collectors.joining(".")),
         0,
         needed,
-        needed.stream().mapToInt(i -> i).sum() + needed.size() - 1
+        needed.stream().mapToInt(i -> i).sum() + needed.size() - 1,
+        new HashMap<>()
       );
       log.info("{} with {} => {}", game, needed, n);
       sum += n;
@@ -89,7 +92,8 @@ public class Day12 implements Solution {
           chunks.stream().collect(Collectors.joining(".")),
           0,
           needed,
-          needed.stream().mapToInt(i -> i).sum() + needed.size() - 1
+          needed.stream().mapToInt(i -> i).sum() + needed.size() - 1,
+          new HashMap<>()
         );
         log.info("{} with {} => {}", game, needed, n);
         sum.addAndGet(n);
@@ -110,8 +114,14 @@ public class Day12 implements Solution {
     final String game,
     final int st,
     final List<Integer> needed,
-    final int minLength
+    final int minLength,
+    final Map<String, Long> memo
   ) {
+    String memoKey = st + "," + needed.size();
+    if (memo.containsKey(memoKey)) {
+      return memo.get(memoKey);
+    }
+
     if (game.length() - st < minLength) {
       return 0;
     }
@@ -125,7 +135,9 @@ public class Day12 implements Solution {
     // all done!
     if (needed.isEmpty()) {
       // we can't have leftover #
-      return game.indexOf("#", st) >= 0 ? 0 : 1;
+      long val = game.indexOf("#", st) >= 0 ? 0L : 1L;
+      memo.put(memoKey, val);
+      return val;
     }
     // some still needed, but no chunks left
     if (st >= game.length()) {
@@ -133,7 +145,9 @@ public class Day12 implements Solution {
     }
 
     if (game.charAt(st) == '.') {
-      return getNumOptions(game, st + 1, needed, minLength);
+      long val = getNumOptions(game, st + 1, needed, minLength, memo);
+      memo.put(memoKey, val);
+      return val;
     }
 
     int neededSize = needed.get(0);
@@ -151,7 +165,15 @@ public class Day12 implements Solution {
         // we can't skip this.
         return 0;
       }
-      return getNumOptions(game, indexOfNextChunkStart, needed, minLength);
+      long val = getNumOptions(
+        game,
+        indexOfNextChunkStart,
+        needed,
+        minLength,
+        memo
+      );
+      memo.put(memoKey, val);
+      return val;
     }
 
     // first chunk can go full ###
@@ -160,18 +182,22 @@ public class Day12 implements Solution {
       long possibleSkipping = 0;
       if (!chunk.contains("#")) {
         possibleSkipping =
-          getNumOptions(game, indexOfNextChunkStart, needed, minLength);
+          getNumOptions(game, indexOfNextChunkStart, needed, minLength, memo);
       }
 
-      return (
-        getNumOptions(
-          game,
-          indexOfNextChunkStart,
-          needed.subList(1, needed.size()),
-          Math.max(minLength - neededSize - 1, 0)
-        ) +
-        possibleSkipping
-      );
+      long val =
+        (
+          getNumOptions(
+            game,
+            indexOfNextChunkStart,
+            needed.subList(1, needed.size()),
+            Math.max(minLength - neededSize - 1, 0),
+            memo
+          ) +
+          possibleSkipping
+        );
+      memo.put(memoKey, val);
+      return val;
     }
 
     // if we have # at the start and are skipping forward, this cannot work.
@@ -200,18 +226,24 @@ public class Day12 implements Solution {
 
     // we don't fit
     if (chunk.charAt(neededSize) == '#') {
-      return getNumOptions(game, skipThisChunk, needed, minLength);
+      long val = getNumOptions(game, skipThisChunk, needed, minLength, memo);
+      memo.put(memoKey, val);
+      return val;
     }
 
     // log.info("WE CAN FIT {} in {}", neededSize, chunk);
-    return (
-      getNumOptions(
-        game,
-        st + neededSize + 1,
-        needed.subList(1, needed.size()),
-        Math.max(minLength - neededSize - 1, 0)
-      ) +
-      getNumOptions(game, skipThisChunk, needed, minLength)
-    );
+    long val =
+      (
+        getNumOptions(
+          game,
+          st + neededSize + 1,
+          needed.subList(1, needed.size()),
+          Math.max(minLength - neededSize - 1, 0),
+          memo
+        ) +
+        getNumOptions(game, skipThisChunk, needed, minLength, memo)
+      );
+    memo.put(memoKey, val);
+    return val;
   }
 }
