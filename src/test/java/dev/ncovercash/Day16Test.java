@@ -9,19 +9,19 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 @Log4j2
-class Day15Test {
+class Day16Test {
 
   static List<Arguments> testCases() {
     return List.of(
-      Arguments.of("15/example.txt", "1320", "145"),
-      Arguments.of("15/input.txt", "507291", "296921")
+      Arguments.of("16/example.txt", "46", "51"),
+      Arguments.of("16/input.txt", "6906", "7330")
     );
   }
 
   @ParameterizedTest
   @MethodSource("testCases")
   void testAnswer(String filename, String expectedPart1, String expectedPart2) {
-    Day15 instance = new Day15();
+    Day16 instance = new Day16();
 
     if (!"skip".equals(expectedPart1)) {
       int start = (int) System.currentTimeMillis();
