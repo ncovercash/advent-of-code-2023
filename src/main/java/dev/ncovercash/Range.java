@@ -2,6 +2,7 @@ package dev.ncovercash;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.CheckForNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -47,6 +48,7 @@ class Range implements Comparable<Range> {
     return max - min + 1;
   }
 
+  /** MODIFIES IN PLACE */
   public Range truncate(int newMin, int newMax) {
     // completely OOB
     if (this.max < newMin || this.min > newMax) {
@@ -61,6 +63,15 @@ class Range implements Comparable<Range> {
     return this;
   }
 
+  /** Clones into a new range */
+  @CheckForNull
+  public Range truncatedTo(int newMin, int newMax) {
+    if (newMin > newMax) {
+      return null;
+    }
+    return this.clone().truncate(newMin, newMax);
+  }
+
   public boolean isEmpty() {
     return this.min == -1 && this.max == -1;
   }
@@ -68,5 +79,13 @@ class Range implements Comparable<Range> {
   @Override
   public String toString() {
     return String.format("[%d,%d]", min, max);
+  }
+
+  public Range clone() {
+    return new Range(this.min, this.max);
+  }
+
+  public static Range of(int min, int max) {
+    return new Range(min, max);
   }
 }
